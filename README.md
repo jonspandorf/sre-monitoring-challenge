@@ -55,7 +55,7 @@ curl http://localhost:8080/api/slow      # 2-5 second response
 
 ## 🌊 Generate Traffic *(Optional)*
 
-Test your monitoring solution with realistic usage patterns:
+We've created a traffic generator script to help you test your monitoring solution with realistic usage patterns. This script simulates real-world traffic scenarios including normal operations, traffic spikes, error conditions, and performance issues - perfect for validating your observability setup.
 
 ### What patterns are generated:
 - **Normal API usage** (60% of duration): `/api/users`, `/api/users/{id}`, `/health`
@@ -79,11 +79,13 @@ kubectl port-forward -n monitoring svc/sample-service 8080:80 &
 ## 📁 Project Structure
 
 ```
-sample-service/
+sre-monitoring-challenge/
 ├── helm/                     # Kubernetes deployment
 │   ├── Chart.yaml           # Helm chart
 │   ├── values.yaml          # Configuration
 │   └── templates/           # K8s manifests
+│       ├── deployment.yaml  # Pod deployment
+│       └── service.yaml     # Service definition
 ├── app/                     # Application code
 │   ├── app.py              # Flask app with instrumentation
 │   └── requirements.txt     # Dependencies

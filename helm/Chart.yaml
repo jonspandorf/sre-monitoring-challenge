@@ -12,8 +12,4 @@ keywords:
   - interview
   - monitoring
 
-maintainers:
-  - name: SRE Team
-    email: sre@company.com
-
-home: https://github.com/company/sample-service
+home: https://github.com/haym-gloat/sre-monitoring-challenge
