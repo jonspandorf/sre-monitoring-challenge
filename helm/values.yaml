@@ -1,0 +1,60 @@
+# Sample Service Configuration
+# A microservice for SRE monitoring challenges
+
+# Application Configuration
+app:
+  name: sample-service
+  # DockerHub image with latest improvements
+  image: haymed/sample-service
+  tag: latest
+  imagePullPolicy: Always
+  replicas: 1
+
+# Resource Configuration
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+# Health Checks
+healthChecks:
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 8080
+    initialDelaySeconds: 5
+    periodSeconds: 5
+
+# Service Configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+# Tracing Configuration (configure your tracing backend)
+tracing:
+  # Set this to your Jaeger/OTLP collector endpoint
+  # Example: "http://jaeger-collector:4318/v1/traces"
+  otlpEndpoint: ""
+  protocol: "http/protobuf"
+
+# Application Environment Variables
+env:
+  - name: LOG_LEVEL
+    value: "INFO"
+  - name: LOG_FORMAT
+    value: "json"
+  # OpenTelemetry service identification (tracing available - configure your endpoint!)
+  - name: OTEL_SERVICE_NAME
+    value: "sample-service"
+  - name: OTEL_SERVICE_VERSION
+    value: "1.0.0" 

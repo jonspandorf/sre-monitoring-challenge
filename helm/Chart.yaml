@@ -1,0 +1,19 @@
+apiVersion: v2
+name: sample-service
+description: A Python Flask microservice for SRE monitoring challenges
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - microservice
+  - observability
+  - sre
+  - interview
+  - monitoring
+
+maintainers:
+  - name: SRE Team
+    email: sre@company.com
+
+home: https://github.com/company/sample-service
