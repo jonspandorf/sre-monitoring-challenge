@@ -34,6 +34,56 @@ Design and implement an observability solution for a sample microservice deploye
 - **Distributed traces** via OpenTelemetry (configure your endpoint)
 - **Health checks** and readiness probes
 
+## 🔌 API Endpoints
+
+The sample service exposes several endpoints designed to help you test different aspects of your monitoring solution:
+
+### Core Endpoints
+- **`GET /health`** - Health check endpoint
+  - Always returns `200 OK` with `{"status": "healthy"}`
+  - Used by Kubernetes liveness/readiness probes
+  - Good for basic connectivity monitoring
+
+- **`GET /metrics`** - Prometheus metrics endpoint
+  - Exposes all application metrics in Prometheus format
+  - Includes HTTP request metrics, custom business metrics, and Python runtime stats
+  - Essential for your monitoring stack
+
+### API Endpoints (Normal Behavior)
+- **`GET /api/users`** - List users endpoint
+  - Returns a list of mock users with realistic response times (100-300ms)
+  - Simulates a typical database query operation
+  - Good for testing normal application monitoring
+
+- **`GET /api/users/{id}`** - Get specific user
+  - Returns user details for valid IDs (1-100)
+  - Returns `404` for invalid user IDs
+  - Useful for testing both success and client error scenarios
+
+### Testing Endpoints (Problematic Behavior)
+- **`GET /api/error`** - Always fails
+  - **Always returns `500 Internal Server Error`**
+  - Perfect for testing error rate alerts and error log monitoring
+  - Generates consistent error traces
+
+- **`GET /api/flaky`** - Intermittent failures
+  - **30% chance of returning `500 error`**
+  - **70% chance of normal `200` response**
+  - Ideal for testing alerting thresholds and error rate calculations
+  - Simulates real-world application instability
+
+- **`GET /api/slow`** - Performance testing
+  - **Always takes 2-5 seconds to respond**
+  - Returns `200` but with high latency
+  - Perfect for testing latency monitoring and SLA alerting
+  - Simulates database timeouts or external API delays
+
+### What Each Endpoint Generates:
+- **Metrics**: Request count, duration histograms, error rates by endpoint
+- **Logs**: Structured JSON logs with request details, response times, and errors
+- **Traces**: Distributed traces showing request flow and timing
+- **Custom Metrics**: Business logic counters (user lookups, error types, etc.)
+
 ## 🚀 Quick Start
 
 ```bash
