@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.app.name }}
+  labels:
+    app: {{ .Values.app.name }}
+    release: {{ .Release.Name }}
+    # These labels are important for Prometheus Operator to discover this ServiceMonitor
+    prometheus: prometheus
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.app.name }}
+      release: {{ .Release.Name }}
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      # Add additional labels for better organization
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'sample_service_.*'
+          action: keep
+  # Namespace selector to monitor services in the sample namespace
+  namespaceSelector:
+    matchNames:
+      - sample 
