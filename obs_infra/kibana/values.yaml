@@ -1,0 +1,21 @@
+
+kibana:
+  elasticsearchURL: http://elasticsearch-master:9200
+  # service:
+  #   type: ClusterIP
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+  extraEnvs:
+    - name: KIBANA_ENCRYPTION_KEY
+      valueFrom:
+        secretKeyRef:
+          name: kibana-encryption-key
+          key: encryptionKey
+  # kibanaConfig:
+  #   kibana.yml: |
+  #     xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
