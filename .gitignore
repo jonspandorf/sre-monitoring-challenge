@@ -3,3 +3,5 @@
 **/*elastic-values.yaml
 **/*elastic.yaml
 **/*test.yaml
+**/.*terraform*
+**/*.tfstate*

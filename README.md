@@ -1,149 +1,53 @@
-# 🚀 SRE Monitoring Challenge
+# 🚀 SRE Monitoring Challenge - Suggested Solution
 
-## 📖 Overview
+## 📖 Introduction
 
-Build a complete observability solution for this microservice. Demonstrate your SRE expertise by designing the monitoring infrastructure you think this service needs in production.
+This project demonstrates a complete observability stack for the Flask-based application deployed in Kubernetes. My goal was to cover all three pillars of observability—metrics, logs, traces, and suggest alerting—in a way that would scale in a real production environment.
 
-## 🎯 Your Mission
+## 🧠 Tooling Choices & Rationale
 
-You've been given responsibility for observability of a production-like service running in Kubernetes. Your goal is to ensure it's observable—covering metrics, logging, dashboards, and alerting.
+| Pillar         | Tool(s) Used                         | Justification                                                                                                                        |
+| -------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **Metrics**    | Prometheus + Grafana                 | Promtehus is the cloud native standard for scrape metrics and the application is instrumented with promehteus sdk. I use Grafana to      |
+visualize the metric data given the RED and USE nature  |       
+of the platform.                                        |
+| **Logs**       | ElasticSearch + Kibana               | Elastic provides scalable log aggregation. Kibana enables powerful querying and visualization of structured JSON logs.                  |
+| **Traces**     | OpenTelemetry + Elastic APM          | The app was instrumented with OTEL. I used Elastic APM as a backend to centralize traces, error breakdowns, and correlate with logs.      |
+I considered Jaeger as well but Elastic APM offered a   |
+more robust and scalable solution                       |
+| **Dashboards** | Grafana, Kibana                      | Grafana was used to visualize infra metrics (USE, RED). Kibana complements this with app-level insights from APM and logs.                   |
 
-### Your Task:
-Design and implement an observability solution for a sample microservice deployed on Kubernetes using Helm.
 
-### You decide:
-- What observability stack/tools to use
-- How to deploy them (infra considerations, modularity, scalability)
-- What metrics/logs/traces are important
-- What alerts should be defined and why
+## 💿 Optional techstack that was considered
 
-**Show us your thinking!** We're interested in your approach, reasoning, and the choices you make.
+# Loki - easily integrated with Grafana which allows to visualize log data. However, it does not provide the actual output and not as robust as Kibana. 
 
-## 📱 The Application
+# Jaeger - it is the first solution for traces and can be integrated with Grafan as a data source. Elastic APM offered a more robust and scalable solution. However, Elastic APM still is not integrated with metrics and there some premium features that requries subscription.
 
-### What's provided:
-- **Python Flask API** with realistic endpoints
-- **Full instrumentation**: metrics, structured logs, and distributed traces
-- **Kubernetes deployment** via Helm chart
-- **Traffic generator** for testing your solution
+# Coralogix, Datadog, Dyntrace all offeres a robust APM platform but one should evaluate the costs for the usage and it doesn't fit this type of small project. 
 
-### Available telemetry:
-- **HTTP metrics** (request counts, durations, error rates)
-- **Application metrics** (business logic, custom counters, operation types)
-- **Structured JSON logs** with correlation IDs and trace correlation
-- **Distributed traces** via OpenTelemetry (configure your endpoint)
-- **Health checks** and readiness probes
+## 🔧 Deployment Architecture
 
-## 🔌 API Endpoints
+I deployed the observability stack in one namespace alongside the microservice (in the monitoring namespace) in Minikube using Helm and provided a kickstart script to automate the setup. Each observability component is modular, allowing for isolated upgrades.
 
-The sample service exposes several endpoints designed to help you test different aspects of your monitoring solution:
+📈 Dashboards & Visualizations
 
-### Core Endpoints
-- **`GET /health`** - Health check endpoint
-  - Always returns `200 OK` with `{"status": "healthy"}`
-  - Used by Kubernetes liveness/readiness probes
+After the deployment, enable the APM integration in Kibana (APM -> Add Integration -> add [apm-server-apm-server:8200,http://apm-server-apm-server:8200]). Imidieatly after you can observe the analytics in the APM Dashboard. 
 
-- **`GET /metrics`** - Prometheus metrics endpoint
-  - Exposes all application metrics in Prometheus format
-  - Includes HTTP request metrics, custom business metrics, and Python runtime stats
+You can import the Grafana dashboard and observe the metrics when traffic is generated. For Jaeger traces add the Jaeger datasource and connect to ```http://jaeger-query``` 
 
-### API Endpoints (Normal Behavior)
-- **`GET /api/users`** - List users endpoint
-  - Returns a list of mock users with realistic response times (100-300ms)
-  - Simulates a typical database query operation
 
-- **`GET /api/users/{id}`** - Get specific user
-  - Returns user details for valid IDs (1-100)
-  - Returns `404` for invalid user IDs
+## 🚨 Alerts
 
-### Testing Endpoints (Problematic Behavior)
-- **`GET /api/error`** - Always fails
-  - **Always returns `500 Internal Server Error`**
-  - Generates consistent error traces
+I did not provision alerts though would use Terraform to provision them in both Kibana and Grafana. I would seperate the RED and USE and focus on the following:
+*Error Rate Exceeded: how many errors occured during the last 5m (by percent or count)*
+*Latency, if duration or response increases during 1m for example*
+*Application is not healthy*
+*Increased Spikes in CPU and RAM for at least 5m*
+*High utilization of CPU and RAM*
 
-- **`GET /api/flaky`** - Intermittent failures
-  - **30% chance of returning `500 error`**
-  - **70% chance of normal `200` response**
-  - Simulates real-world application instability
 
-- **`GET /api/slow`** - Performance testing
-  - **Always takes 2-5 seconds to respond**
-  - Returns `200` but with high latency
-  - Simulates database timeouts or external API delays
+## ⚙️ Init Environment
 
-### What Each Endpoint Generates:
-- **Metrics**: Request count, duration histograms, error rates by endpoint
-- **Logs**: Structured JSON logs with request details, response times, and errors
-- **Traces**: Distributed traces showing request flow and timing
-- **Custom Metrics**: Business logic counters (user lookups, error types, etc.)
+A kickstrt script can be found at `scripts/kickstart.sh` and spins minikube, the observability instances and the application. You would then have to access the Kibana UI and enable APM Integration. You can also access Grafana and add the dashboard. 
 
-## 🚀 Quick Start
-
-```bash
-# Deploy the service
-helm install sample-service ./helm --namespace monitoring --create-namespace --wait
-
-# Verify it's running
-kubectl get pods -n monitoring
-kubectl port-forward -n monitoring svc/sample-service 8080:80
-
-# Test the service
-curl http://localhost:8080/health        # Health check
-curl http://localhost:8080/metrics       # Prometheus metrics
-curl http://localhost:8080/api/users     # Normal API endpoint
-curl http://localhost:8080/api/error     # Always returns 500 error
-curl http://localhost:8080/api/flaky     # 30% chance of error
-curl http://localhost:8080/api/slow      # 2-5 second response
-```
-
-## 🌊 Generate Traffic *(Optional)*
-
-We've created a traffic generator script to help you test your monitoring solution with realistic usage patterns. This script simulates real-world traffic scenarios including normal operations, traffic spikes, error conditions, and performance issues - perfect for validating your observability setup.
-
-### What patterns are generated:
-- **Normal API usage** (60% of duration): `/api/users`, `/api/users/{id}`, `/health`
-- **Traffic spike**: 30 rapid requests (fixed, regardless of duration)
-- **Error testing**: 10 requests to `/api/flaky` (fixed, ~30% failure rate)
-- **Performance testing**: 5 slow requests (fixed, 2-5s each)
-
-### How to use:
-```bash
-# Option 1: Manual port-forward
-kubectl port-forward -n monitoring svc/sample-service 8080:80 &
-./scripts/generate-traffic.sh 60      # 1 minute of traffic
-
-# Option 2: Automatic port-forward 
-./scripts/generate-traffic.sh --port-forward 300     # 5 minutes
-
-# Get help
-./scripts/generate-traffic.sh --help
-```
-
-## 📁 Project Structure
-
-```
-sre-monitoring-challenge/
-├── helm/                     # Kubernetes deployment
-│   ├── Chart.yaml           # Helm chart
-│   ├── values.yaml          # Configuration
-│   └── templates/           # K8s manifests
-│       ├── deployment.yaml  # Pod deployment
-│       └── service.yaml     # Service definition
-├── app/                     # Application code
-│   ├── app.py              # Flask app with instrumentation
-│   └── requirements.txt     # Dependencies
-├── scripts/                 # Utilities
-│   └── generate-traffic.sh  # Traffic generator
-├── Dockerfile              # Container definition
-└── README.md              # This file
-```
-
-## 🛠️ Build Your Solution
-
-**Now it's up to you!** 
-
-Design and implement the observability infrastructure you think this service needs. Consider what you'd want to monitor, alert on, and visualize if this were running in production.
-
----
-
-**Good luck! 🎉**
