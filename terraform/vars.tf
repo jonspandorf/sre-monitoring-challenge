@@ -17,19 +17,14 @@ variable "alerts" {
     interval = string
     enabled = bool
     notify_when = string
+    tags = optional(list(string))
     params = object({
-      threshold = optional(number)
-      windowSize = optional(number)
-      windowUnit = optional(string)
-      environment = optional(string)
-      serviceName = optional(string)
-      transactionType = optional(string)
-      # For index-threshold alerts
       aggType = optional(string)
       groupBy = optional(string)
       termSize = optional(number)
       timeWindowSize = optional(number)
       timeWindowUnit = optional(string)
+      threshold = optional(list(number))
       thresholdComparator = optional(string)
       index = optional(list(string))
       timeField = optional(string)

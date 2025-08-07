@@ -107,7 +107,7 @@ install_jaeger() {
     print_status "Installing Jaeger..."
     cd obs_infra/jaeger
     
-  #  helm dep up
+   helm dep up
     helm install jaeger -n obs .
     
     print_success "Jaeger installation initiated"
@@ -119,7 +119,7 @@ install_otel() {
     print_status "Installing OpenTelemetry Collector..."
     cd obs_infra/otel
     
-  #  helm dep up
+    helm dep up
     helm install otel -n obs .
     
     print_success "OpenTelemetry Collector installation initiated"
@@ -131,7 +131,7 @@ install_elasticapm() {
     print_status "Installing Elastic APM Server..."
     cd obs_infra/elasticapm
     
-  #  helm dep up
+    helm dep up
     helm install apm-server -n obs .
     
     print_success "Elastic APM Server installation initiated"
@@ -142,43 +142,17 @@ install_elasticapm() {
 install_kibana() {
     print_status "Installing Kibana..."
     cd obs_infra/kibana
+
+    encryption_key=$(/usr/bin/python3 -c "import random, string; print(''.join(random.choices(string.ascii_letters, k=32)))")
+
+    kubectl -n obs create secret generic kibana-encryption-key --from-literal=encryptionKey=$encryption_key
     
-    helm install kibana elastic/kibana -n obs
+    helm install kibana -f values.yaml elastic/kibana -n obs
     
     print_success "Kibana installation initiated"
     cd ../..
 }
 
-# Wait for deployments to be ready
-wait_for_deployments() {
-    print_status "Waiting for deployments to be ready..."
-    
-    # Wait for Elasticsearch
-    print_status "Waiting for Elasticsearch to be ready..."
-    kubectl wait --for=condition=available --timeout=600s sts/elasticsearch-master -n obs
-    
-    # Wait for Prometheus
-    print_status "Waiting for Prometheus to be ready..."
-    kubectl wait --for=condition=available --timeout=300s sts/prometheus-prometheus-kube-prometheus-prometheus -n obs
-    
-    # Wait for Jaeger
-    print_status "Waiting for Jaeger to be ready..."
-    kubectl wait --for=condition=available --timeout=300s deployment/jaeger-collector -n obs
-    
-    # Wait for OTEL Collector
-    print_status "Waiting for OpenTelemetry Collector to be ready..."
-    kubectl wait --for=condition=available --timeout=300s deployment/otel-collector -n obs
-    
-    # Wait for APM Server
-    print_status "Waiting for APM Server to be ready..."
-    kubectl wait --for=condition=available --timeout=300s deployment/apm-server-apm-server -n obs
-    
-    # Wait for Kibana
-    print_status "Waiting for Kibana to be ready..."
-    kubectl wait --for=condition=available --timeout=300s deployment/kibana-kibana -n obs
-    
-    print_success "All deployments are ready!"
-}
 
 # Display service information
 display_services() {
@@ -232,8 +206,6 @@ main() {
     print_status "Installing observability infrastructure..."
     echo ""
     
-    cd ../
-
     install_elasticsearch
     install_prometheus
     install_jaeger
@@ -244,9 +216,7 @@ main() {
     echo ""
     print_status "All Helm installations completed. Waiting for deployments to be ready..."
     echo ""
-    
-    wait_for_deployments
-    
+
     echo ""
     print_success "🎉 Infrastructure setup completed successfully!"
     echo ""

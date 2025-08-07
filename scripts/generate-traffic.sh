@@ -9,7 +9,7 @@ set -e
 # Configuration
 SERVICE_URL="http://localhost:8080"
 SERVICE_NAME="sample-service"
-NAMESPACE="sample"
+NAMESPACE="monitoring"
 PORTFORWARD_PID=""
 USE_PORTFORWARD=false
 
