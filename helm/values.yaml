@@ -59,4 +59,4 @@ env:
   - name: OTEL_SERVICE_VERSION
     value: "1.0.0" 
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    value: "http://otel-opentelemetry-collector.otel:4318/v1/traces"
+    value: "http://otel-opentelemetry-collector.obs:4318/v1/traces"

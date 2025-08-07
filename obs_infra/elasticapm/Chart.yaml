@@ -1,0 +1,10 @@
+apiVersion: v2
+name: apm-server
+description: A Helm chart to deploy Elastic APM
+type: application
+version: 0.1.0
+appVersion: "8.13.0"
+dependencies:
+  - name: apm-server
+    version: 8.5.1
+    repository: "https://helm.elastic.co"

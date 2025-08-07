@@ -1,0 +1,9 @@
+extraEnvs:
+  - name: KIBANA_ENCRYPTION_KEY
+    valueFrom:
+      secretKeyRef:
+        name: kibana-encryption-key
+        key: encryptionKey
+kibanaConfig:
+  kibana.yml: |
+    xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
