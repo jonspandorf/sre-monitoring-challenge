@@ -26,4 +26,4 @@ spec:
   # Namespace selector to monitor services in the sample namespace
   namespaceSelector:
     matchNames:
-      - sample 
+      - monitoring

@@ -1,53 +1,82 @@
-# 🚀 SRE Monitoring Challenge - Suggested Solution
+# 🚀 SRE Monitoring Challenge - Solution
 
-## 📖 Introduction
+## 📖 Overview
 
-This project demonstrates a complete observability stack for the Flask-based application deployed in Kubernetes. My goal was to cover all three pillars of observability—metrics, logs, traces, and suggest alerting—in a way that would scale in a real production environment.
+This project demonstrates a comprehensive observability stack for the Flask-based application deployed in Kubernetes. The solution covers all three pillars of observability—metrics, logs, and traces—with a scalable architecture suitable for production environments.
 
-## 🧠 Tooling Choices & Rationale
+## 🧠 Technology Stack & Rationale
 
-| Pillar         | Tool(s) Used                         | Justification                                                                                                                        |
+| Pillar         | Technology                          | Justification                                                                                                                        |
 | -------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Metrics**    | Prometheus + Grafana                 | Promtehus is the cloud native standard for scrape metrics and the application is instrumented with promehteus sdk. I use Grafana to      |
-visualize the metric data given the RED and USE nature  |       
-of the platform.                                        |
-| **Logs**       | ElasticSearch + Kibana               | Elastic provides scalable log aggregation. Kibana enables powerful querying and visualization of structured JSON logs.                  |
-| **Traces**     | OpenTelemetry + Elastic APM          | The app was instrumented with OTEL. I used Elastic APM as a backend to centralize traces, error breakdowns, and correlate with logs.      |
-I considered Jaeger as well but Elastic APM offered a   |
-more robust and scalable solution                       |
-| **Dashboards** | Grafana, Kibana                      | Grafana was used to visualize infra metrics (USE, RED). Kibana complements this with app-level insights from APM and logs.                   |
+| **Metrics**    | Prometheus + Grafana                 | Prometheus serves as the cloud-native standard for metrics collection, with the application instrumented using the Prometheus SDK. Grafana provides visualization capabilities for RED and USE metrics analysis. |
+| **Logs**       | Elasticsearch + Kibana               | Elasticsearch offers scalable log aggregation and storage. Kibana enables powerful querying and visualization of structured JSON logs. |
+| **Traces**     | OpenTelemetry + Elastic APM          | The application is instrumented with OpenTelemetry. Elastic APM serves as the backend to centralize traces, error analysis, and correlation with logs. While Jaeger was considered, Elastic APM provides a more robust and scalable solution. |
+| **Dashboards** | Grafana, Kibana                      | Grafana visualizes infrastructure metrics (USE, RED patterns). Kibana complements this with application-level insights from APM and logs. |
 
+## 💡 Alternative Technologies Considered
 
-## 💿 Optional techstack that was considered
+### Loki
+- **Pros**: Lightweight, cost-effective log aggregation with native Grafana integration
+- **Cons**: Less mature ecosystem compared to Elasticsearch, fewer advanced features
 
-# Loki - easily integrated with Grafana which allows to visualize log data. However, it does not provide the actual output and not as robust as Kibana. 
+### Jaeger
+- **Pros**: Industry-standard tracing solution with Grafana integration
+- **Cons**: Elastic APM offers superior scalability and robustness, though some premium features require subscription
 
-# Jaeger - it is the first solution for traces and can be integrated with Grafan as a data source. Elastic APM offered a more robust and scalable solution. However, Elastic APM still is not integrated with metrics and there some premium features that requries subscription.
-
-# Coralogix, Datadog, Dyntrace all offeres a robust APM platform but one should evaluate the costs for the usage and it doesn't fit this type of small project. 
+### Commercial APM Platforms (Coralogix, Datadog, Dynatrace)
+- **Pros**: Comprehensive APM capabilities
+- **Cons**: Cost-prohibitive for small-scale projects
 
 ## 🔧 Deployment Architecture
 
-I deployed the observability stack in one namespace alongside the microservice (in the monitoring namespace) in Minikube using Helm and provided a kickstart script to automate the setup. Each observability component is modular, allowing for isolated upgrades.
+The observability stack is deployed in a dedicated monitoring namespace alongside the microservice in Minikube using Helm charts. Each component is modular, enabling isolated upgrades and maintenance. A kickstart script automates the entire setup process.
 
-📈 Dashboards & Visualizations
+## 📊 Dashboards & Visualizations
 
-After the deployment, enable the APM integration in Kibana (APM -> Add Integration -> add [apm-server-apm-server:8200,http://apm-server-apm-server:8200]). Imidieatly after you can observe the analytics in the APM Dashboard. 
+### Setup Instructions
+1. **Kibana APM Integration**: Navigate to APM → Add Integration → Configure with `apm-server-apm-server:8200`
+2. **Grafana Dashboard**: Import the provided dashboard to visualize metrics when traffic is generated
+3. **Jaeger Integration**: Add Jaeger as a data source in Grafana and connect to `http://jaeger-query`
 
-You can import the Grafana dashboard and observe the metrics when traffic is generated. For Jaeger traces add the Jaeger datasource and connect to ```http://jaeger-query``` 
+### Available Dashboards
+- **APM Dashboard**: Real-time application performance analytics
+- **Grafana Dashboard**: Infrastructure and application metrics visualization
 
+## 🚨 Alerting Strategy
 
-## 🚨 Alerts
+While not implemented in this solution, the recommended approach uses Terraform to provision alerts in both Kibana and Grafana. The alerting strategy focuses on:
 
-I did not provision alerts though would use Terraform to provision them in both Kibana and Grafana. I would seperate the RED and USE and focus on the following:
-*Error Rate Exceeded: how many errors occured during the last 5m (by percent or count)*
-*Latency, if duration or response increases during 1m for example*
-*Application is not healthy*
-*Increased Spikes in CPU and RAM for at least 5m*
-*High utilization of CPU and RAM*
+### RED Metrics (Application)
+- **Error Rate**: Alert when error percentage exceeds threshold over 5-minute windows
+- **Latency**: Alert on response time increases over 1-minute periods
+- **Application Health**: Monitor application availability and health status
 
+### USE Metrics (Infrastructure)
+- **Resource Spikes**: Alert on CPU and RAM spikes lasting 5+ minutes
+- **High Utilization**: Monitor sustained high CPU and RAM usage
 
-## ⚙️ Init Environment
+## ⚙️ Environment Setup
 
-A kickstrt script can be found at `scripts/kickstart.sh` and spins minikube, the observability instances and the application. You would then have to access the Kibana UI and enable APM Integration. You can also access Grafana and add the dashboard. 
+### Quick Start
+Execute the kickstart script located at `scripts/kickstart.sh` to:
+- Initialize Minikube
+- Deploy all observability components
+- Launch the application
+
+### Post-Deployment Steps
+1. Access Kibana UI and enable APM integration
+2. Access Grafana and import the dashboard
+3. Generate traffic using the provided scripts to observe metrics
+
+## 📁 Project Structure
+
+```
+sre-monitoring-challenge/
+├── app/                    # Flask application
+├── helm/                   # Kubernetes deployment charts
+├── obs_infra/             # Observability infrastructure charts
+├── scripts/               # Automation scripts
+├── terraform/             # Infrastructure as Code
+└── README.md              # This file
+```
 

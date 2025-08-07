@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 29,
+  "id": 30,
   "links": [],
   "panels": [
     {
@@ -440,7 +440,7 @@
             "uid": "ceu2u3wte2vwgf"
           },
           "editorMode": "code",
-          "expr": "container_memory_working_set_bytes{namespace=\"sample\",pod=~\"sample-service.*\"}",
+          "expr": "container_memory_working_set_bytes{namespace=\"monitoring\",pod=~\"sample-service.*\"}",
           "legendFormat": "__auto",
           "operation": "/api/users",
           "queryType": "search",
@@ -454,7 +454,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "kube_pod_container_resource_requests{namespace=\"sample\",resource=\"memory\"}",
+          "expr": "kube_pod_container_resource_requests{namespace=\"monitoring\",resource=\"memory\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "__auto",
@@ -591,7 +591,7 @@
             "uid": "ceu2u3wte2vwgf"
           },
           "editorMode": "code",
-          "expr": "rate(container_cpu_usage_seconds_total{namespace=\"sample\",pod=~\"sample-service.*\"}[5m])",
+          "expr": "rate(container_cpu_usage_seconds_total{namespace=\"monitoring\",pod=~\"sample-service.*\"}[5m])",
           "legendFormat": "__auto",
           "operation": "/api/users",
           "queryType": "search",
@@ -605,7 +605,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "kube_pod_container_resource_requests{namespace=\"sample\",resource=\"cpu\"}",
+          "expr": "kube_pod_container_resource_requests{namespace=\"monitoring\",resource=\"cpu\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "__auto",
@@ -619,7 +619,7 @@
     {
       "datasource": {
         "type": "jaeger",
-        "uid": "deu74gga53shsa"
+        "uid": "feub586rw2qrkf"
       },
       "fieldConfig": {
         "defaults": {
@@ -701,10 +701,8 @@
         {
           "datasource": {
             "type": "jaeger",
-            "uid": "deu74gga53shsa"
+            "uid": "feub586rw2qrkf"
           },
-          "maxDuration": "",
-          "minDuration": "100ms",
           "operation": "/api/users",
           "queryType": "search",
           "refId": "A",
@@ -717,7 +715,7 @@
     {
       "datasource": {
         "type": "jaeger",
-        "uid": "deu74gga53shsa"
+        "uid": "feub586rw2qrkf"
       },
       "fieldConfig": {
         "defaults": {
@@ -799,10 +797,8 @@
         {
           "datasource": {
             "type": "jaeger",
-            "uid": "deu74gga53shsa"
+            "uid": "feub586rw2qrkf"
           },
-          "maxDuration": "",
-          "minDuration": "100ms",
           "operation": "/api/users/<int:user_id>",
           "queryType": "search",
           "refId": "A",
@@ -815,7 +811,7 @@
     {
       "datasource": {
         "type": "jaeger",
-        "uid": "deu74gga53shsa"
+        "uid": "feub586rw2qrkf"
       },
       "fieldConfig": {
         "defaults": {
@@ -897,11 +893,9 @@
         {
           "datasource": {
             "type": "jaeger",
-            "uid": "deu74gga53shsa"
+            "uid": "feub586rw2qrkf"
           },
-          "maxDuration": "",
-          "minDuration": "100ms",
-          "operation": "/api/flaky",
+          "operation": "/api/flakey",
           "queryType": "search",
           "refId": "A",
           "service": "sample-service"
@@ -913,7 +907,7 @@
     {
       "datasource": {
         "type": "jaeger",
-        "uid": "deu74gga53shsa"
+        "uid": "feub586rw2qrkf"
       },
       "fieldConfig": {
         "defaults": {
@@ -995,10 +989,8 @@
         {
           "datasource": {
             "type": "jaeger",
-            "uid": "deu74gga53shsa"
+            "uid": "feub586rw2qrkf"
           },
-          "maxDuration": "",
-          "minDuration": "100ms",
           "operation": "/api/slow",
           "queryType": "search",
           "refId": "A",
@@ -1021,7 +1013,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "sample service",
-  "uid": "a671feb6-2a49-40dd-a08e-a8e2546d5824",
-  "version": 9
+  "title": "sample service-1",
+  "uid": "a671feb6-2a49-40dd-a08e-a8e2546d5824d",
+  "version": 2
 }
