@@ -75,6 +75,13 @@ add_elastic_repo() {
     print_success "Elastic Helm repository added and updated"
 }
 
+add_prometheus_repo() {
+    print_status "Adding Prometheus Helm repository..."
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+    helm repo update
+    print_success "Prometheus Helm repository added and updated"
+}
+
 # Install Elasticsearch
 install_elasticsearch() {
     print_status "Installing Elasticsearch..."
@@ -96,6 +103,8 @@ install_prometheus() {
     print_status "Installing Prometheus..."
     cd obs_infra/prometheus
     
+    helm dep up
+
     helm install prometheus -n obs .
     
     print_success "Prometheus installation initiated"
@@ -200,7 +209,8 @@ main() {
     
     check_prerequisites
     start_minikube
-    # add_elastic_repo
+    add_elastic_repo
+    add_prometheus_repo
     
     echo ""
     print_status "Installing observability infrastructure..."
@@ -208,7 +218,7 @@ main() {
     
     install_elasticsearch
     install_prometheus
-    install_jaeger
+#    install_jaeger
     install_otel
     install_elasticapm
     install_kibana
