@@ -82,6 +82,13 @@ add_prometheus_repo() {
     print_success "Prometheus Helm repository added and updated"
 }
 
+add_otel_repo() {
+    print_status "Adding OpenTelemetry Helm repository..."
+    helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+    helm repo update
+    print_success "OpenTelemetry Helm repository added and updated"
+}
+
 # Install Elasticsearch
 install_elasticsearch() {
     print_status "Installing Elasticsearch..."
@@ -211,7 +218,7 @@ main() {
     start_minikube
     add_elastic_repo
     add_prometheus_repo
-    
+    add_otel_repo
     echo ""
     print_status "Installing observability infrastructure..."
     echo ""
