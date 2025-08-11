@@ -1,0 +1,20 @@
+{{- if .Values.app.alerts.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Values.app.name }}-alerts
+spec:
+  groups:
+    - name: {{ .Values.app.name }}.rules
+      rules:
+        {{ range .Values.app.alerts.rules }}
+        - alert: {{ .name }}
+          expr: {{ .expr }}
+          for: {{ .for }}
+          labels:
+            severity: {{ .severity }}
+          annotations:
+            summary: {{ .annotations.summary }}
+            description: {{ .annotations.description }}
+        {{ end }}
+{{- end }}

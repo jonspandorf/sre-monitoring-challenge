@@ -107,7 +107,7 @@ install_jaeger() {
     print_status "Installing Jaeger..."
     cd obs_infra/jaeger
     
-   helm dep up
+#    helm dep up
     helm install jaeger -n obs .
     
     print_success "Jaeger installation initiated"
@@ -119,7 +119,7 @@ install_otel() {
     print_status "Installing OpenTelemetry Collector..."
     cd obs_infra/otel
     
-    helm dep up
+        # helm dep up
     helm install otel -n obs .
     
     print_success "OpenTelemetry Collector installation initiated"
@@ -131,7 +131,7 @@ install_elasticapm() {
     print_status "Installing Elastic APM Server..."
     cd obs_infra/elasticapm
     
-    helm dep up
+    # helm dep up
     helm install apm-server -n obs .
     
     print_success "Elastic APM Server installation initiated"

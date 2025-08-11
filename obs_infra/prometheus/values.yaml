@@ -26,7 +26,10 @@ kube-prometheus-stack:
   # Grafana configuration (we'll use this for dashboards)
   grafana:
     enabled: true
-    adminPassword: admin
+    # admin: 
+    #   existingSecret: grafana-admin-secret
+    #   userKey: username
+    #   passwordKey: password
     resources:
       limits:
         cpu: 500m

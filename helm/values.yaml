@@ -3,6 +3,30 @@
 
 # Application Configuration
 app:
+  alerts:
+    enabled: true
+    rules:
+      - name: SampleServiceDown
+        expr: sample_service_up == 0
+        for: 1m
+        severity: critical
+        annotations:
+          summary: "Sample Service is down"
+          description: "The sample service is reporting 'up=0' for more than 1 minute."
+      - name: SampleServiceHighErrorRate
+        expr: sum(rate(sample_service_requests_total{status=~"5.."}[5m])) > 0.05
+        for: 5m
+        severity: warning
+        annotations:
+          summary: "High error rate on Sample Service"
+          description: "Error rate >5% over the last 5 minutes."
+      - name: SampleServiceHighLatency
+        expr: 0.95 < sum(rate(sample_service_request_duration_seconds_bucket[5m])) by (le)
+        for: 2m
+        severity: warning
+        annotations:
+          summary: "High latency on Sample Service"
+          description: "Latency >95th percentile over the last 2 minutes."
   name: sample-service
   # DockerHub image with latest improvements
   image: haymed/sample-service

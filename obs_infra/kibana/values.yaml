@@ -7,3 +7,8 @@ extraEnvs:
 kibanaConfig:
   kibana.yml: |
     xpack.encryptedSavedObjects.encryptionKey: "${KIBANA_ENCRYPTION_KEY}"
+    xpack.fleet.agents.fleet_server.hosts: ["http://apm-server-apm-server:8200"]
+    xpack.fleet.agents.enabled: true
+    xpack.fleet.packages:
+      - name: apm
+        version: latest

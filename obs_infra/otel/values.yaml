@@ -11,7 +11,7 @@ opentelemetry-collector:
           scrape_configs:
             - job_name: 'sample-service'
               static_configs:
-                - targets: ['sample-service.sample:8080']
+                - targets: ['sample-service.monitoring:8080']
       otlp:
         protocols:
           http:
@@ -55,7 +55,7 @@ opentelemetry-collector:
           processors: [batch]
           exporters: [otlp/elasticapm]
         metrics:
-          receivers: [otlp]
+          receivers: [otlp,prometheus]
           processors: [batch]
           exporters: [otlp/elasticapm]  # You can remove if you’re not sending metrics
         traces:
