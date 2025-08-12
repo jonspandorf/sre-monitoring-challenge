@@ -4,6 +4,7 @@
 # Application Configuration
 global:
   grafana_dashboard_base_url: "http://localhost:8085/d/a671feb6-2a49-40dd-a08e-a8e2546d5824d/sample-service-dashboard"
+
 app:
   alerts:
     enabled: true
@@ -26,11 +27,11 @@ app:
           grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=5"
       - name: SampleServiceHighLatency
         expr: 0.95 < sum(rate(sample_service_request_duration_seconds_bucket[5m])) by (le)
-        for: 2m
+        for: 1m
         severity: warning
         annotations:
           summary: "High latency on Sample Service"
-          description: "Latency >95th percentile over the last 2 minutes."
+          description: "Latency >95th percentile over the last 1 minutes."
           grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=2"
   name: sample-service
   # DockerHub image with latest improvements
