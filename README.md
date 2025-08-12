@@ -10,7 +10,7 @@ This project demonstrates a comprehensive observability stack for the Flask-base
 | -------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | **Metrics**    | Prometheus + Grafana                 | Prometheus serves as the cloud-native standard for metrics collection, with the application instrumented using the Prometheus SDK. Grafana provides visualization capabilities for RED and USE metrics analysis. |
 | **Logs**       | Elasticsearch + Kibana               | Elasticsearch offers scalable log aggregation and storage. Kibana enables powerful querying and visualization of structured JSON logs. |
-| **Traces**     | OpenTelemetry + Elastic APM          | The application is instrumented with OpenTelemetry. Elastic APM serves as the backend to centralize traces, error analysis, and correlation with logs. While Jaeger was considered, Elastic APM provides a more robust and scalable solution. |
+| **Traces**     | OpenTelemetry + Elastic APM          | The application is instrumented with OpenTelemetry. Elastic APM serves as the agent to centralize traces, error analysis, and correlation with logs. While Jaeger was considered, Elastic APM provides a more robust and scalable solution. |
 | **Dashboards** | Grafana, Kibana                      | Grafana visualizes infrastructure metrics (USE, RED patterns). Kibana complements this with application-level insights from APM and logs. |
 
 ## 💡 Alternative Technologies Considered
@@ -33,18 +33,13 @@ The observability stack is deployed in a dedicated monitoring namespace alongsid
 
 ## 📊 Dashboards & Visualizations
 
-### Setup Instructions
-1. **Kibana APM Integration**: Navigate to APM → Add Integration → Configure with `apm-server-apm-server:8200`
-2. **Grafana Dashboard**: Import the provided dashboard to visualize metrics when traffic is generated
-3. **Jaeger Integration**: Add Jaeger as a data source in Grafana and connect to `http://jaeger-query`
-
 ### Available Dashboards
-- **APM Dashboard**: Real-time application performance analytics
-- **Grafana Dashboard**: Infrastructure and application metrics visualization
+- **APM Dashboard**: Real-time application performance analytics by traces and logs
+- **Grafana Dashboard**: Infrastructure and application metrics visualization. Provisioned automatically by the prometheus-grafana sidecar from `helm/templates/dashboard.yaml` configmap. 
 
 ## 🚨 Alerting Strategy
 
-While not implemented in this solution, the recommended approach uses Terraform to provision alerts in both Kibana and Grafana. The alerting strategy focuses on:
+Alerts are defined in `helm/values.yaml` and templated `helm/templates/alerts.yaml`. The alerts based on the exposed application metrics. 
 
 ### RED Metrics (Application)
 - **Error Rate**: Alert when error percentage exceeds threshold over 5-minute windows
@@ -69,7 +64,7 @@ Execute the kickstart script located at `scripts/kickstart.sh` to:
 3. Access Kibana UI by port-forward `kubectl port-forward -n obs svc/kibana-kibana 5601`. Use `elastic` for username and paste the copied secret.
 4. Go to APM and click on sample-service to observe the performance by traces and watch the transactions. 
 5. Obtain the Grafana admin password `kubectl get secrets -n obs prometheus-grafana -ojsonpath='{.data.admin-password}' | base64 -d | pbcopy`
-6. Access Grafana and select the sample-service dashboard from the buttom of dashboards `kubectl port-forward -n obs svc/prometheus-grafana 8085:80`
+6. Access Grafana (choose your favorite http port) and select the sample-service dashboard from the buttom of dashboards `kubectl port-forward -n obs svc/prometheus-grafana 8085:80`
 7. Observe the current state of the application by observing the application metrics and Pod resource usage.
 
 ## 📁 Project Structure
