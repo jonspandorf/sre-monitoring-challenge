@@ -2,6 +2,8 @@
 # A microservice for SRE monitoring challenges
 
 # Application Configuration
+global:
+  grafana_dashboard_base_url: "http://localhost:8085/d/a671feb6-2a49-40dd-a08e-a8e2546d5824d/sample-service-dashboard"
 app:
   alerts:
     enabled: true
@@ -13,6 +15,7 @@ app:
         annotations:
           summary: "Sample Service is down"
           description: "The sample service is reporting 'up=0' for more than 1 minute."
+          grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=4"
       - name: SampleServiceHighErrorRate
         expr: sum(rate(sample_service_requests_total{status=~"5.."}[5m])) > 0.05
         for: 5m
@@ -20,6 +23,7 @@ app:
         annotations:
           summary: "High error rate on Sample Service"
           description: "Error rate >5% over the last 5 minutes."
+          grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=5"
       - name: SampleServiceHighLatency
         expr: 0.95 < sum(rate(sample_service_request_duration_seconds_bucket[5m])) by (le)
         for: 2m
@@ -27,6 +31,7 @@ app:
         annotations:
           summary: "High latency on Sample Service"
           description: "Latency >95th percentile over the last 2 minutes."
+          grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=2"
   name: sample-service
   # DockerHub image with latest improvements
   image: haymed/sample-service

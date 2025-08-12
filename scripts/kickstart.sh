@@ -31,6 +31,46 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+# Function to check helm release status and handle existing installations
+check_and_install_helm() {
+    local release_name=$1
+    local chart_path=$2
+    local chart_repo=$3
+    local chart_name=$4
+    local additional_args=$5
+    
+    print_status "Checking $release_name installation status..."
+    
+    if helm list -n obs | grep -q "^$release_name"; then
+        print_warning "$release_name is already installed. Checking status..."
+        
+        # Check if the release is in a failed or pending state
+        local status=$(helm status $release_name -n obs --output json 2>/dev/null | grep -o '"status":"[^"]*"' | cut -d'"' -f4 || echo "unknown")
+        
+        if [[ "$status" == "deployed" ]]; then
+            print_success "$release_name is already running successfully. Skipping installation."
+            return 0
+        else
+            print_warning "$release_name is in '$status' state. Uninstalling and reinstalling..."
+            helm uninstall $release_name -n obs
+            # Wait a bit for cleanup
+            sleep 5
+        fi
+    fi
+    
+    print_status "Installing $release_name..."
+    
+    if [[ -n "$chart_repo" && -n "$chart_name" ]]; then
+        # External chart installation
+        helm install $release_name $chart_repo/$chart_name $additional_args -n obs
+    else
+        # Local chart installation
+        helm install $release_name -n obs . $additional_args
+    fi
+    
+    print_success "$release_name installation initiated"
+}
+
 # Check if required tools are installed
 check_prerequisites() {
     print_status "Checking prerequisites..."
@@ -67,6 +107,13 @@ start_minikube() {
     print_success "Minikube started successfully"
 }
 
+# Ensure obs namespace exists
+ensure_namespace() {
+    print_status "Ensuring obs namespace exists..."
+    kubectl create namespace obs --dry-run=client -o yaml | kubectl apply -f -
+    print_success "Namespace 'obs' is ready"
+}
+
 # Add Elastic Helm repository
 add_elastic_repo() {
     print_status "Adding Elastic Helm repository..."
@@ -94,14 +141,8 @@ install_elasticsearch() {
     print_status "Installing Elasticsearch..."
     cd obs_infra/elasticsearch
     
-    helm install elasticsearch \
-        --set replicas=1 \
-        --set persistence.enabled=false \
-        elastic/elasticsearch \
-        -n obs \
-        --create-namespace
+    check_and_install_helm "elasticsearch" "." "elastic" "elasticsearch" "--set replicas=1 --set persistence.enabled=false"
     
-    print_success "Elasticsearch installation initiated"
     cd ../..
 }
 
@@ -111,10 +152,8 @@ install_prometheus() {
     cd obs_infra/prometheus
     
     helm dep up
-
-    helm install prometheus -n obs .
+    check_and_install_helm "prometheus" "." "" "" ""
     
-    print_success "Prometheus installation initiated"
     cd ../..
 }
 
@@ -124,9 +163,8 @@ install_jaeger() {
     cd obs_infra/jaeger
     
     helm dep up
-    helm install jaeger -n obs .
+    check_and_install_helm "jaeger" "." "" "" ""
     
-    print_success "Jaeger installation initiated"
     cd ../..
 }
 
@@ -136,9 +174,8 @@ install_otel() {
     cd obs_infra/otel
     
     helm dep up
-    helm install otel -n obs .
+    check_and_install_helm "otel" "." "" "" ""
     
-    print_success "OpenTelemetry Collector installation initiated"
     cd ../..
 }
 
@@ -148,9 +185,8 @@ install_elasticapm() {
     cd obs_infra/elasticapm
     
     helm dep up
-    helm install apm-server -n obs .
+    check_and_install_helm "apm-server" "." "" "" ""
     
-    print_success "Elastic APM Server installation initiated"
     cd ../..
 }
 
@@ -161,11 +197,10 @@ install_kibana() {
 
     encryption_key=$(/usr/bin/python3 -c "import random, string; print(''.join(random.choices(string.ascii_letters, k=32)))")
 
-    kubectl -n obs create secret generic kibana-encryption-key --from-literal=encryptionKey=$encryption_key
+    kubectl -n obs create secret generic kibana-encryption-key --from-literal=encryptionKey=$encryption_key --dry-run=client -o yaml | kubectl apply -f -
     
-    helm install kibana -f values.yaml elastic/kibana -n obs
+    check_and_install_helm "kibana" "." "elastic" "kibana" "-f values.yaml"
     
-    print_success "Kibana installation initiated"
     cd ../..
 }
 
@@ -216,6 +251,7 @@ main() {
     
     check_prerequisites
     start_minikube
+    ensure_namespace
     add_elastic_repo
     add_prometheus_repo
     add_otel_repo
@@ -243,9 +279,15 @@ main() {
     echo ""
     echo "=========================================="
     echo "What to do next? 🤔"
-    echo "1. Deploy the sample service..."
-    echo "2. Go to Kibana and enable the APM server (APM -> adding the server -> set the host to apm-server-apm-server:8200 and also the same for http endpoint)"
-    echo "3. Generate traffic using: ./scripts/generate-traffic.sh" 
+    echo "1. Deploy the sample service... (helm install sample-service -n monitoring --create-namespace ./helm --wait)"
+    echo "2. Genetrate traffic for at least 10 minutes (./scripts/generate-traffic.sh --port-forward 600)" 
+    echo "3. Obtain the Elasticsearch password (kubectl get secrets -n obs elasticsearch-master-credentials -ojsonpath='{.data.password}' | base64 -d | pbcopy)"
+    echo "4. Access Kibana UI by port-forward (kubectl port-forward -n obs svc/kibana-kibana 5601)"
+    echo "5. Use `elastic` for username and paste the copied secret."
+    echo "6. Go to APM and click on sample-service to observe the performance by traces and watch the transactions." 
+    echo "7. Obtain the Grafana admin password (kubectl get secrets -n obs prometheus-grafana -ojsonpath='{.data.admin-password}' | base64 -d | pbcopy)"
+    echo "8. Access Grafana and select the sample-service dashboard from the buttom of dashboards (kubectl port-forward -n obs svc/prometheus-grafana 8085:80)"
+    echo "9. Observe the current state of the application by observing the application metrics and Pod resource usage."
     echo "=========================================="
 }
 

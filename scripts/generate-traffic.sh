@@ -36,6 +36,7 @@ error() {
 # Check if port is in use
 check_port() {
     local port=$1
+    echo "Checking availability of port $port"
     if lsof -i ":$port" >/dev/null 2>&1; then
         return 0
     else

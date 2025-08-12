@@ -10,6 +10,7 @@ apm-server:
         password: "${ELASTICSEARCH_PASSWORD}"
         protocol: "https"
         ssl.certificate_authorities: ["/usr/share/apm-server/config/certs/ca.crt"]
+      prometheus_metrics: true
   replicas: 1
 
 

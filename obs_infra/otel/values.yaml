@@ -8,10 +8,30 @@ opentelemetry-collector:
     receivers:
       prometheus:
         config:
+          global:
+              scrape_interval: 30s
+              scrape_timeout: 10s
           scrape_configs:
-            - job_name: 'sample-service'
-              static_configs:
-                - targets: ['sample-service.monitoring:8080']
+            - job_name: 'sample-service-pods'
+              kubernetes_sd_configs:
+                - role: endpoints
+                  namespaces:
+                    names: ['monitoring']
+              relabel_configs:
+                # Keep only your specific service
+                - source_labels: [__meta_kubernetes_service_name]
+                  action: keep
+                  regex: sample-service
+                # Keep only the metrics port (adjust if your port has different name)
+                - source_labels: [__meta_kubernetes_endpoint_port_name]
+                  action: keep
+                  regex: metrics
+                # Optional: Add service name as a label for easier identification
+                - source_labels: [__meta_kubernetes_service_name]
+                  target_label: service
+              metrics_path: '/metrics'
+              scrape_interval: 30s
+              honor_labels: true
       otlp:
         protocols:
           http:
@@ -63,6 +83,13 @@ opentelemetry-collector:
           processors: [batch]
           exporters: [otlp/elasticapm,otlp/jaeger]
 
+  clusterRole:
+    create: true
+    rules:
+      - apiGroups: [""]
+        resources: ["*"]
+        verbs: ["get", "list", "watch"]
+
   extraVolumes:
     - name: varlibdockercontainers
       hostPath:
@@ -94,7 +121,7 @@ opentelemetry-collector:
   securityContext:
     runAsUser: 0
     runAsGroup: 0
-    fsGroup: 0
+    # fsGroup: 0
 
   # Service configuration
   service:

@@ -3,10 +3,13 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: {{ .Values.app.name }}-alerts
+  labels:
+    release: prometheus
 spec:
   groups:
     - name: {{ .Values.app.name }}.rules
       rules:
+        {{- $root := . }}
         {{ range .Values.app.alerts.rules }}
         - alert: {{ .name }}
           expr: {{ .expr }}
@@ -15,6 +18,11 @@ spec:
             severity: {{ .severity }}
           annotations:
             summary: {{ .annotations.summary }}
+            {{- if .annotations.grafana_dashboard }}
+            grafana_dashboard: {{ tpl .annotations.grafana_dashboard $root }}
+            {{- end }}
+            {{- if .annotations.description }}
             description: {{ .annotations.description }}
+            {{- end }}
         {{ end }}
 {{- end }}
