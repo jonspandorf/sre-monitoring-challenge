@@ -60,7 +60,7 @@ Execute the kickstart script located at `scripts/kickstart.sh` to:
 
 ### Post-Deployment Steps
 1. Generate traffic using the provided scripts to observe metrics for at least 10 minutes (kubectl run)
-2. Obtain the Elasticsearch password `kubectl get secrets -n obs elasticsearch-master-certs -ojsonpath='{.data.password}' | base64 -d | pbcopy`
+2. Obtain the Elasticsearch password `kubectl get secrets -n obs elasticsearch-master-credentials -ojsonpath='{.data.password}' | base64 -d | pbcopy`
 3. Access Kibana UI by port-forward `kubectl port-forward -n obs svc/kibana-kibana 5601`. Use `elastic` for username and paste the copied secret.
 4. Go to APM and click on sample-service to observe the performance by traces and watch the transactions. 
 5. Obtain the Grafana admin password `kubectl get secrets -n obs prometheus-grafana -ojsonpath='{.data.admin-password}' | base64 -d | pbcopy`
