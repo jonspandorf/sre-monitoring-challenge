@@ -18,21 +18,34 @@ app:
           description: "The sample service is reporting 'up=0' for more than 1 minute."
           grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=4"
       - name: SampleServiceHighErrorRate
-        expr: sum(rate(sample_service_requests_total{status=~"5.."}[5m])) > 0.05
-        for: 5m
+        expr: sum(rate(sample_service_requests_total{status=~"5.."}[5m])) > (2 / 300)
+        for: 1m
         severity: warning
         annotations:
           summary: "High error rate on Sample Service"
           description: "Error rate >5% over the last 5 minutes."
           grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=5"
       - name: SampleServiceHighLatency
-        expr: 0.95 < sum(rate(sample_service_request_duration_seconds_bucket[5m])) by (le)
+        expr: histogram_quantile(
+           0.95,
+           sum(rate(sample_service_request_duration_seconds_bucket[5m])) by (le)
+          ) > 0.1 
         for: 1m
         severity: warning
         annotations:
           summary: "High latency on Sample Service"
           description: "Latency >95th percentile over the last 1 minutes."
           grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&editPanel=2"
+      - name: ErrorBudgetBurnRate
+        expr: (sum(rate(sample_service_requests_total{status=~"5.."}[5m])) / sum(rate(sample_service_requests_total[5m]))) > (0.01 * 2)
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error budget burn rate"
+          description: "Error budget is being burned too quickly (2x) — check appliaction"
+          grafana_dashboard: "{{ .Values.global.grafana_dashboard_base_url }}?orgId=1&from=now-15m&to=now&timezone=browser&tab=queries&editPanel=7"
+
   name: sample-service
   # DockerHub image with latest improvements
   image: haymed/sample-service
