@@ -714,6 +714,7 @@ data:
         }
       ],
       "preload": false,
+      "refresh": "auto",
       "schemaVersion": 41,
       "tags": [],
       "templating": {
@@ -733,5 +734,5 @@ kind: ConfigMap
 metadata:
   creationTimestamp: null
   name: sample-service-dashboard
-  labels: 
+  labels:
     grafana_dashboard: "1"
